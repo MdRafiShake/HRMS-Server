@@ -59,7 +59,7 @@ connectMongoDB();
 app.use("/api/roles", roleRouter);
 
 // Health Check Route
-app.get("/health", (req: Request, res: Response) => {
+app.get("/api/health", (req: Request, res: Response) => {
   res.json({ message: "hems Server is running successfully!" });
 });
 

@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express'
-import Role from '../models/roles.model.js'
+import Role from '../models/role.model.js'
 import mongoose from 'mongoose'
 import { logger } from '../utility/logger.js'
 
-export const getAllRole = async (
+export const getAllRoleController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -29,7 +29,8 @@ export const getAllRole = async (
     // Return 200 OK with an empty array if no roles are found
     res.status(200).json({
       success: true,
-      message: roles.length === 0 ? 'No roles found.' : 'Roles retrieved successfully',
+      message:
+        roles.length === 0 ? 'No roles found.' : 'Roles retrieved successfully',
       data: roles
     })
   } catch (error) {
@@ -37,7 +38,7 @@ export const getAllRole = async (
   }
 }
 
-export const createRole = async (
+export const createRoleController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -89,7 +90,7 @@ export const createRole = async (
   }
 }
 
-export const getRoleById = async (
+export const getRoleByIdController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -138,7 +139,7 @@ export const getRoleById = async (
   }
 }
 
-export const updateRole = async (
+export const updateRoleController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -194,7 +195,7 @@ export const updateRole = async (
   }
 }
 
-export const deleteRole = async (
+export const deleteRoleController = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -241,6 +242,64 @@ export const deleteRole = async (
       success: true,
       message: 'Role deleted successfully',
       data: deletedRole
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const restoreRoleController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const roleId = req.params.id
+    const userID = req.userId
+    const username = req.username
+
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Restoring role',
+      userId: userID,
+      username,
+      roleId
+    })
+
+    if (!roleId) {
+      const error: any = new Error('Role ID is required.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    // Validate roleId format
+    if (!mongoose.Types.ObjectId.isValid(roleId)) {
+      const error: any = new Error('Invalid Role ID format.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    const restoredRole = await Role.findByIdAndUpdate(
+      roleId,
+      {
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null,
+        updatedBy: userID
+      },
+      { new: true, includeDeleted: true }
+    )
+
+    if (!restoredRole) {
+      const error: any = new Error('Role not found.')
+      error.statusCode = 404
+      return next(error)
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Role restored successfully',
+      data: restoredRole
     })
   } catch (error) {
     next(error)
