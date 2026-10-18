@@ -1,10 +1,12 @@
 import type { NextFunction, Request, Response } from 'express'
-import type { PermissionKey } from '../interface/db.interface'
+import type { PermissionKey } from '../constants/permissions.constant'
 
 const verifyPermissions = (requiredPermissions: PermissionKey[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const userPermissions = req?.permissions || {}
-    const hasPermission = requiredPermissions.every(permission => userPermissions[permission])
+    const hasPermission = requiredPermissions.every(
+      permission => userPermissions[permission]
+    )
     if (!hasPermission) {
       return res.status(403).json({ message: 'Insufficient permissions' })
     }

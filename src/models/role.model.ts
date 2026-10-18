@@ -1,7 +1,7 @@
 // src/models/role.model.ts
 import mongoose, { Schema } from 'mongoose'
-import type { PermissionKey, RoleInterface } from '../interface/db.interface'
-import { PERMISSIONS_LIST } from '../constants/permissions.constant'
+import { PERMISSIONS_LIST, type PermissionKey } from '../constants/permissions.constant'
+import type { RoleInterface } from '../interface/db.interface'
 
 // Programmatically build the Mongoose permissions sub-object
 const permissionsSchemaDefinition = PERMISSIONS_LIST.reduce((acc, permission) => {
@@ -26,7 +26,6 @@ const roleSchema = new Schema<RoleInterface>(
       default: 'active'
     },
     
-    // Inject the dynamically generated permissions here!
     permissions: permissionsSchemaDefinition,
 
     createdBy: {
