@@ -1,23 +1,73 @@
-import type { Request, Response, NextFunction } from "express";
-import Role from "../models/roles.model.js";
+import type { Request, Response, NextFunction } from 'express'
+import Role from '../models/roles.model.js'
+import mongoose from 'mongoose'
+import { logger } from '../utility/logger.js'
 
-export const createRole = async (req: Request, res: Response, next: NextFunction) => {
+export const getAllRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const { name, description, permissions } = req.body;
+    const userId = req.userId
+    const username = req.username
+    const limit = parseInt(req.query.limit as string) || 10
+    const page = parseInt(req.query.page as string) || 1
+    const skip = (page - 1) * limit
+
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Fetching all roles',
+      userId,
+      username,
+      limit,
+      page
+    })
+
+    const roles = await Role.find().limit(limit).skip(skip)
+
+    // Return 200 OK with an empty array if no roles are found
+    res.status(200).json({
+      success: true,
+      message: roles.length === 0 ? 'No roles found.' : 'Roles retrieved successfully',
+      data: roles
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const createRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, description, permissions } = req.body
+    const userId = req.userId
+    const username = req.username
 
     // 1. Validation using the global error handler
     if (!name) {
-      const error: any = new Error("Role name is required.");
-      error.statusCode = 400; 
-      return next(error);     
+      const error: any = new Error('Role name is required.')
+      error.statusCode = 400
+      return next(error)
     }
 
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Creating a new role',
+      userId,
+      username,
+      data: { name, description, permissions }
+    })
+
     // 2. Check if role already exists
-    const existingRole = await Role.findOne({ name });
+    const existingRole = await Role.findOne({ name })
     if (existingRole) {
-      const error: any = new Error("Role already exists.");
-      error.statusCode = 400;
-      return next(error);
+      const error: any = new Error('Role already exists.')
+      error.statusCode = 400
+      return next(error)
     }
 
     // 3. Create the role in MongoDB
@@ -25,16 +75,174 @@ export const createRole = async (req: Request, res: Response, next: NextFunction
       name,
       description,
       permissions,
-    });
+      createdBy: userId
+    })
 
     // 4. Success response
     res.status(201).json({
       success: true,
-      message: "Role created successfully",
-      data: newRole,
-    });
-
+      message: 'Role created successfully',
+      data: newRole
+    })
   } catch (error) {
-    next(error); 
+    next(error)
   }
-};
+}
+
+export const getRoleById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const roleId = req.params.id
+    const userId = req.userId
+    const username = req.username
+
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Fetching role by ID',
+      userId,
+      username,
+      roleId
+    })
+
+    if (!roleId) {
+      const error: any = new Error('Role ID is required.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    // Validate roleId format
+    if (!mongoose.Types.ObjectId.isValid(roleId)) {
+      const error: any = new Error('Invalid Role ID format.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    const role = await Role.findById(roleId)
+
+    if (!role) {
+      const error: any = new Error('Role not found.')
+      error.statusCode = 404
+      return next(error)
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Role retrieved successfully',
+      data: role
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const roleId = req.params.id
+    const { name, description, permissions } = req.body
+
+    const userId = req.userId
+    const username = req.username
+
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Updating role',
+      userId,
+      username,
+      roleId,
+      data: { name, description, permissions }
+    })
+
+    if (!roleId) {
+      const error: any = new Error('Role ID is required.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    // Validate roleId format
+    if (!mongoose.Types.ObjectId.isValid(roleId)) {
+      const error: any = new Error('Invalid Role ID format.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    const updatedRole = await Role.findByIdAndUpdate(
+      roleId,
+      { name, description, permissions, updatedBy: userId },
+      { new: true }
+    )
+
+    if (!updatedRole) {
+      const error: any = new Error('Role not found.')
+      error.statusCode = 404
+      return next(error)
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Role updated successfully',
+      data: updatedRole
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const deleteRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const roleId = req.params.id
+    const userID = req.userId
+    const username = req.username
+
+    // Log the request details for audit purposes
+    logger.info({
+      message: 'Deleting role',
+      userId: userID,
+      username,
+      roleId
+    })
+
+    if (!roleId) {
+      const error: any = new Error('Role ID is required.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    // Validate roleId format
+    if (!mongoose.Types.ObjectId.isValid(roleId)) {
+      const error: any = new Error('Invalid Role ID format.')
+      error.statusCode = 400
+      return next(error)
+    }
+
+    const deletedRole = await Role.findByIdAndUpdate(
+      roleId,
+      { isDeleted: true, deletedAt: new Date(), deletedBy: userID },
+      { new: true }
+    )
+
+    if (!deletedRole) {
+      const error: any = new Error('Role not found.')
+      error.statusCode = 404
+      return next(error)
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Role deleted successfully',
+      data: deletedRole
+    })
+  } catch (error) {
+    next(error)
+  }
+}

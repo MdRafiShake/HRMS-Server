@@ -1,34 +1,43 @@
 import type { Types } from 'mongoose'
 
 export interface RoleInterface {
-  name: String
-  description: String
+  name: string
+  description: string
+  status: 'active' | 'inactive'
   permissions: {
     // Read Employee Data
-    readEmployeeList: Boolean
+    readEmployeeList: boolean
 
-    readEmployee: Boolean
-    createEmployee: Boolean
-    updateEmployee: Boolean
-    deleteEmployee: Boolean
+    readEmployee: boolean
+    createEmployee: boolean
+    updateEmployee: boolean
+    deleteEmployee: boolean
 
     // Read Role Data
-    readRoleList: Boolean
+    readRoleList: boolean
 
-    readRole: Boolean
-    createRole: Boolean
-    updateRole: Boolean
-    deleteRole: Boolean
+    readRole: boolean
+    createRole: boolean
+    updateRole: boolean
+    deleteRole: boolean
 
     // Read Department Data
-    readDepartmentList: Boolean
+    readDepartmentList: boolean
 
-    readDepartment: Boolean
-    createDepartment: Boolean
-    updateDepartment: Boolean
-    deleteDepartment: Boolean
+    readDepartment: boolean
+    createDepartment: boolean
+    updateDepartment: boolean
+    deleteDepartment: boolean
 
     //add more permissions here also update the model
-
   }
+  createdAt?: Date
+  createdBy?: Types.ObjectId
+
+  updatedAt?: Date
+  updatedBy?: Types.ObjectId
+
+  isDeleted?: boolean
+  deletedAt?: Date
+  deletedBy?: Types.ObjectId
 }

@@ -7,6 +7,7 @@ import { connectMongoDB } from "./lib/mongoConfig.js";
 import { auth } from "./lib/auth.js";
 
 import roleRouter from "./routes/role.routes.js";
+import globalErrorHandler from "./utility/globalErrorHandler.js";
 
 // Load environment variables first
 dotenv.config();
@@ -59,7 +60,7 @@ app.use("/api/roles", roleRouter);
 
 // Health Check Route
 app.get("/health", (req: Request, res: Response) => {
-  res.json({ message: "HRMS Server is running successfully!" });
+  res.json({ message: "hems Server is running successfully!" });
 });
 
 // Protected Route Example (with error safety)
@@ -93,19 +94,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("Error caught:", err.message);
-
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-
-  res.status(statusCode).json({
-    success: false,
-    status: statusCode,
-    message: message,
-    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-  });
-});
+app.use(globalErrorHandler);
 
 
 // ==========================================

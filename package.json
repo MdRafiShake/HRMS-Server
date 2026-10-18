@@ -1,5 +1,5 @@
 {
-  "name": "hrms-server",
+  "name": "hams-server",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
