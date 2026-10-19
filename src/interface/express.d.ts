@@ -1,4 +1,3 @@
-// src/types/express.d.ts
 import { Request } from 'express'
 
 declare global {
@@ -6,6 +5,7 @@ declare global {
     interface Request {
       userId?: string
       username?: string
+      permissions?: { [key: string]: boolean }
     }
   }
 }

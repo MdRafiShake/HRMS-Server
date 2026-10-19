@@ -1,0 +1,19 @@
+info:
+  name: Restore Assert
+  type: http
+  seq: 7
+
+http:
+  method: PATCH
+  url: http://localhost:5000/api/assets/6ad5bd5fab21d7af1818467c/restore
+  body:
+    type: json
+    data: ""
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

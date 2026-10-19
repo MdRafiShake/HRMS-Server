@@ -1,42 +1,48 @@
+// src/interface/db.interface.ts
 import type { Types } from 'mongoose'
+import type { PermissionsMap } from '../constants/permissions.constant'
 
 export interface RoleInterface {
   name: string
   description: string
-  status: 'active' | 'inactive'
-  permissions: {
-    // Read Employee Data
-    readEmployeeList: boolean
+  status: 'active' | 'inactive' | 'disabled'
+  permissions: PermissionsMap
 
-    readEmployee: boolean
-    createEmployee: boolean
-    updateEmployee: boolean
-    deleteEmployee: boolean
-
-    // Read Role Data
-    readRoleList: boolean
-
-    readRole: boolean
-    createRole: boolean
-    updateRole: boolean
-    deleteRole: boolean
-
-    // Read Department Data
-    readDepartmentList: boolean
-
-    readDepartment: boolean
-    createDepartment: boolean
-    updateDepartment: boolean
-    deleteDepartment: boolean
-
-    //add more permissions here also update the model
-  }
   createdAt?: Date
   createdBy?: Types.ObjectId
-
   updatedAt?: Date
   updatedBy?: Types.ObjectId
+  isDeleted?: boolean
+  deletedAt?: Date
+  deletedBy?: Types.ObjectId
+}
 
+export interface AssetInterface {
+  assetName: string
+  description: string
+  status: 'active' | 'inactive' | 'disabled'
+  serialNumber?: string
+  qty?: number
+
+  createdAt?: Date
+  createdBy?: Types.ObjectId
+  updatedAt?: Date
+  updatedBy?: Types.ObjectId
+  isDeleted?: boolean
+  deletedAt?: Date
+  deletedBy?: Types.ObjectId
+}
+
+export interface AssignAssetInterface {
+  asset: Types.ObjectId
+  user: Types.ObjectId
+  itemQty: number
+  status: 'active' | 'inactive' | 'disabled' | 'assigned' | 'returned'
+
+  createdAt?: Date
+  createdBy?: Types.ObjectId
+  updatedAt?: Date
+  updatedBy?: Types.ObjectId
   isDeleted?: boolean
   deletedAt?: Date
   deletedBy?: Types.ObjectId
