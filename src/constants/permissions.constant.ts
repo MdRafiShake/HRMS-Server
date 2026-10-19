@@ -1,4 +1,3 @@
-
 export const PERMISSIONS_LIST = [
   // Read Employee Data
   'readEmployeeList',
@@ -29,6 +28,7 @@ export const PERMISSIONS_LIST = [
   'readAsset',
   'updateAsset',
   'deleteAsset',
+  'restoreAsset'
 ] as const
 
 // Automatically derive the TypeScript type from the array

@@ -1,31 +1,38 @@
-// src/models/role.model.ts
 import mongoose, { Schema } from 'mongoose'
-import { PERMISSIONS_LIST, type PermissionKey } from '../constants/permissions.constant'
+import {
+  PERMISSIONS_LIST,
+  type PermissionKey
+} from '../constants/permissions.constant'
 import type { RoleInterface } from '../interface/db.interface'
 
 // Programmatically build the Mongoose permissions sub-object
-const permissionsSchemaDefinition = PERMISSIONS_LIST.reduce((acc, permission) => {
-  acc[permission] = { type: Boolean, default: false }
-  return acc
-}, {} as Record<PermissionKey, { type: typeof Boolean; default: boolean }>)
+const permissionsSchemaDefinition = PERMISSIONS_LIST.reduce(
+  (acc, permission) => {
+    acc[permission] = { type: Boolean, default: false }
+    return acc
+  },
+  {} as Record<PermissionKey, { type: typeof Boolean; default: boolean }>
+)
 
 const roleSchema = new Schema<RoleInterface>(
   {
     name: {
       type: String,
-      required: true,
-      unique: true
+      required: [true, 'Role name is required'],
+      trim: true
     },
     description: {
       type: String,
-      default: ''
+      default: '',
+      trim: true
     },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active'
+      enum: ['active', 'inactive', 'disabled'],
+      default: 'active',
+      index: true
     },
-    
+
     permissions: permissionsSchemaDefinition,
 
     createdBy: {
@@ -39,7 +46,8 @@ const roleSchema = new Schema<RoleInterface>(
     },
     isDeleted: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true
     },
     deletedAt: {
       type: Date,
@@ -53,6 +61,17 @@ const roleSchema = new Schema<RoleInterface>(
   },
   {
     timestamps: true
+  }
+)
+
+// --- PARTIAL UNIQUE INDEX FOR SOFT DELETES ---
+// Enforces unique role names only for active (non-deleted) roles,
+// allowing you to reuse role names of deleted records.
+roleSchema.index(
+  { name: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isDeleted: false }
   }
 )
 

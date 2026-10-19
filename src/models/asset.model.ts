@@ -3,18 +3,31 @@ import type { AssetInterface } from '../interface/db.interface'
 
 const assetSchema = new mongoose.Schema<AssetInterface>(
   {
-    name: {
+    assetName: {
       type: String,
-      required: true
+      required: [true, 'Asset name is required'],
+      trim: true,
+      index: true
     },
     description: {
       type: String,
-      default: ''
+      default: '',
+      trim: true
+    },
+    serialNumber: {
+      type: String,
+      trim: true
     },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active'
+      enum: ['active', 'inactive', 'disabled'],
+      default: 'active',
+      index: true
+    },
+    qty: {
+      type: Number,
+      default: 0,
+      min: [0, 'Quantity cannot be negative']
     },
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,7 +40,8 @@ const assetSchema = new mongoose.Schema<AssetInterface>(
     },
     isDeleted: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true
     },
     deletedAt: {
       type: Date,
@@ -37,11 +51,38 @@ const assetSchema = new mongoose.Schema<AssetInterface>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
-    }   
+    }
   },
   {
     timestamps: true
   }
 )
 
-export const Asset = mongoose.model<AssetInterface>('Asset', assetSchema)
+// --- PARTIAL UNIQUE INDEX FOR SOFT DELETES ---
+// Enforces unique serial numbers only for active (non-deleted) assets,
+// allowing you to reuse serial numbers of deleted records.
+assetSchema.index(
+  { serialNumber: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      serialNumber: { $exists: true, $ne: null },
+      isDeleted: false
+    }
+  }
+)
+
+// --- SOFT DELETE MIDDLEWARE ---
+assetSchema.pre(
+  /^find/,
+  function (this: mongoose.Query<any, AssetInterface>, next) {
+    const options = this.getOptions()
+    if (!options.includeDeleted) {
+      this.where({ isDeleted: false })
+    }
+    next()
+  }
+)
+
+const Asset = mongoose.model<AssetInterface>('Asset', assetSchema)
+export default Asset

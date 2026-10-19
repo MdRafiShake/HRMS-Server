@@ -1,11 +1,11 @@
 info:
   name: Restore Role
   type: http
-  seq: 6
+  seq: 7
 
 http:
   method: PATCH
-  url: http://localhost:5000/api/roles/6ad47d6e4af4dcb71a01a2f3
+  url: http://localhost:5000/api/roles/6ad47d6e4af4dcb71a01a2f3/restore
   auth: inherit
 
 settings:

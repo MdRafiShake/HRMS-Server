@@ -19,7 +19,12 @@ const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
     readDepartmentList: false,
     createDepartment: false,
 
-    readAssetsList: false
+    readAssetList: true,
+    createAsset: true,
+    readAsset: true,
+    updateAsset: true,
+    restoreAsset: true,
+    deleteAsset: true
   }
 
   next()
