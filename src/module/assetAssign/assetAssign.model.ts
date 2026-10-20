@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import type { AssignAssetInterface } from '../interface/db.interface'
+import type { AssignAssetInterface } from './assetAssign.interface.js'
 
 const assetAssignSchema = new mongoose.Schema<AssignAssetInterface>(
   {
@@ -7,18 +7,18 @@ const assetAssignSchema = new mongoose.Schema<AssignAssetInterface>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Asset',
       required: true,
-      index: true 
+      index: true
     },
-    user: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User', 
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
-      index: true 
+      index: true
     },
-    itemQty: { 
-      type: Number, 
+    itemQty: {
+      type: Number,
       required: true,
-      min: [1, 'Item quantity must be at least 1'] 
+      min: [1, 'Item quantity must be at least 1']
     },
     status: {
       type: String,
@@ -31,18 +31,18 @@ const assetAssignSchema = new mongoose.Schema<AssignAssetInterface>(
       ref: 'User',
       required: true
     },
-    updatedBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
-    isDeleted: { 
-      type: Boolean, 
+    isDeleted: {
+      type: Boolean,
       default: false,
       index: true
     },
-    deletedAt: { 
-      type: Date, 
-      default: null 
+    deletedAt: {
+      type: Date,
+      default: null
     },
     deletedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -67,7 +67,7 @@ assetAssignSchema.pre(
   }
 )
 
-const AssetAssign = mongoose.model<AssignAssetInterface>(
+export const AssetAssign = mongoose.model<AssignAssetInterface>(
   'AssetAssign',
   assetAssignSchema
 )

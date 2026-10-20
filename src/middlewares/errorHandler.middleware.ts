@@ -1,9 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
-import { auth } from '../lib/auth'
-import { fromNodeHeaders } from 'better-auth/node'
-import { logger } from './logger'
+import { logger } from '../utility/logger.js'
 
-const globalErrorHandler = (
+export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
@@ -11,8 +9,6 @@ const globalErrorHandler = (
 ) => {
   const statusCode = err.statusCode || 500
   const message = err.message || 'Internal Server Error'
-
-  const NODE_ENV = process.env.NODE_ENV || 'development'
 
   logger.error({
     statusCode,
@@ -27,4 +23,4 @@ const globalErrorHandler = (
   })
 }
 
-export default globalErrorHandler
+export default errorHandler

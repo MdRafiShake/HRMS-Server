@@ -4,12 +4,12 @@ import {
   deleteRoleController,
   getAllRoleController,
   getRoleByIdController,
-  getRoleRecycleBin, // Added import
+  getRoleRecycleBin,
   restoreRoleController,
   updateRoleController
-} from '../controllers/role.controller.js'
-import verifyUser from '../middlewares/verifyUser.middleware.js'
-import verifyPermissions from '../middlewares/verifyPermissions.middleware.js'
+} from './role.controller.js'
+import { verifyUser } from '../../middlewares/auth.middleware.js'
+import verifyPermissions from '../../middlewares/verifyPermissions.middleware.js'
 
 const router: Router = Router()
 
@@ -63,4 +63,5 @@ router.patch(
   restoreRoleController
 )
 
+export const roleRoutes = router
 export default router

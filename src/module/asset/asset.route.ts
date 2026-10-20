@@ -7,9 +7,9 @@ import {
   getAssetRecycleBinController,
   restoreAssetController,
   updateAssetController
-} from '../controllers/asset.controller'
-import verifyUser from '../middlewares/verifyUser.middleware'
-import verifyPermissions from '../middlewares/verifyPermissions.middleware'
+} from './asset.controller.js'
+import { verifyUser } from '../../middlewares/auth.middleware.js'
+import verifyPermissions from '../../middlewares/verifyPermissions.middleware.js'
 
 const router: Router = Router()
 
@@ -21,6 +21,7 @@ router.get(
   getAllAssetController
 )
 
+// MUST be placed before '/:id' to prevent Express from treating 'recycle_bin' as an ID
 router.get(
   '/recycle_bin',
   verifyUser,
@@ -64,4 +65,5 @@ router.patch(
   restoreAssetController
 )
 
+export const assetRoutes = router
 export default router

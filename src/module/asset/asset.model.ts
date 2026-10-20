@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import type { AssetInterface } from '../interface/db.interface'
+import type { AssetInterface } from './asset.interface.js'
 
 const assetSchema = new mongoose.Schema<AssetInterface>(
   {
@@ -84,5 +84,5 @@ assetSchema.pre(
   }
 )
 
-const Asset = mongoose.model<AssetInterface>('Asset', assetSchema)
+export const Asset = mongoose.model<AssetInterface>('Asset', assetSchema)
 export default Asset
