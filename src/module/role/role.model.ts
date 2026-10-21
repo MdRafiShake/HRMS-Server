@@ -2,8 +2,8 @@ import mongoose, { Schema } from 'mongoose'
 import {
   PERMISSIONS_LIST,
   type PermissionKey
-} from '../constants/permissions.constant'
-import type { RoleInterface } from '../interface/db.interface'
+} from '../../constants/permissions.constant.js'
+import type { RoleInterface } from './role.interface.js'
 
 // Programmatically build the Mongoose permissions sub-object
 const permissionsSchemaDefinition = PERMISSIONS_LIST.reduce(
@@ -87,5 +87,5 @@ roleSchema.pre(
   }
 )
 
-const Role = mongoose.model<RoleInterface>('Role', roleSchema)
+export const Role = mongoose.model<RoleInterface>('Role', roleSchema)
 export default Role

@@ -1,6 +1,10 @@
 import type { NextFunction, Request, Response } from 'express'
 
-const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // TODO: Implement user verification logic here
 
   req.userId = '6ad4729e856ea46aefdb1ff3' // Placeholder for user verification logic
@@ -30,4 +34,5 @@ const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   next()
 }
 
-export default verifyUser
+export const verifyUser = authMiddleware
+export default authMiddleware

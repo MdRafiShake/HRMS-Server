@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
-import Role from '../models/role.model.js'
 import mongoose from 'mongoose'
-import { logger } from '../utility/logger.js'
+import { logger } from '../../utility/logger.js'
+import { roleService } from './role.service.js'
 
 export const getAllRoleController = async (
   req: Request,
@@ -24,7 +24,7 @@ export const getAllRoleController = async (
       page
     })
 
-    const roles = await Role.find().limit(limit).skip(skip)
+    const roles = await roleService.getAllRoles(limit, skip)
 
     // Return 200 OK with an empty array if no roles are found
     res.status(200).json({
@@ -69,9 +69,7 @@ export const getRoleByIdController = async (
       return next(error)
     }
 
-    const role = await Role.findById(roleId).setOptions({
-      includeDeleted: true
-    })
+    const role = await roleService.getRoleById(roleId)
 
     if (!role) {
       const error: any = new Error('Role not found.')
@@ -111,10 +109,7 @@ export const getRoleRecycleBin = async (
     })
 
     // Fetch only deleted roles, bypassing the global soft-delete middleware
-    const deletedRoles = await Role.find({ isDeleted: true })
-      .setOptions({ includeDeleted: true })
-      .limit(limit)
-      .skip(skip)
+    const deletedRoles = await roleService.getRoleRecycleBin(limit, skip)
 
     return res.status(200).json({
       success: true,
@@ -155,7 +150,7 @@ export const createRoleController = async (
     })
 
     // 2. Check if role already exists
-    const existingRole = await Role.findOne({ name })
+    const existingRole = await roleService.findRoleByName(name)
     if (existingRole) {
       const error: any = new Error('Role already exists.')
       error.statusCode = 400
@@ -163,7 +158,7 @@ export const createRoleController = async (
     }
 
     // 3. Create the role in MongoDB
-    const newRole = await Role.create({
+    const newRole = await roleService.createRole({
       name,
       description,
       permissions,
@@ -221,14 +216,7 @@ export const updateRoleController = async (
     })
 
     // 4. Perform update with validation enabled
-    const updatedRole = await Role.findByIdAndUpdate(
-      roleId,
-      { $set: updateData },
-      {
-        new: true,
-        runValidators: true
-      }
-    )
+    const updatedRole = await roleService.updateRole(roleId, updateData)
 
     if (!updatedRole) {
       const error: any = new Error('Role not found.')
@@ -277,11 +265,7 @@ export const deleteRoleController = async (
       return next(error)
     }
 
-    const deletedRole = await Role.findByIdAndUpdate(
-      roleId,
-      { isDeleted: true, deletedAt: new Date(), deletedBy: userID },
-      { new: true }
-    )
+    const deletedRole = await roleService.deleteRole(roleId, userID)
 
     if (!deletedRole) {
       const error: any = new Error('Role not found.')
@@ -330,16 +314,7 @@ export const restoreRoleController = async (
       return next(error)
     }
 
-    const restoredRole = await Role.findByIdAndUpdate(
-      roleId,
-      {
-        isDeleted: false,
-        deletedAt: null,
-        deletedBy: null,
-        updatedBy: userID
-      },
-      { new: true, includeDeleted: true }
-    )
+    const restoredRole = await roleService.restoreRole(roleId, userID)
 
     if (!restoredRole) {
       const error: any = new Error('Role not found.')
@@ -356,3 +331,15 @@ export const restoreRoleController = async (
     next(error)
   }
 }
+
+export const roleController = {
+  getAllRoles: getAllRoleController,
+  getRoleById: getRoleByIdController,
+  getRoleRecycleBin,
+  createRole: createRoleController,
+  updateRole: updateRoleController,
+  deleteRole: deleteRoleController,
+  restoreRole: restoreRoleController
+}
+
+export default roleController

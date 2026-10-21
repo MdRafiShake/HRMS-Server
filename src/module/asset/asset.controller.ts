@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express'
-import { logger } from '../utility/logger'
-import Asset from '../models/asset.model'
+import { logger } from '../../utility/logger.js'
+import { assetService } from './asset.service.js'
 
 export const getAllAssetController = async (
   req: Request,
@@ -22,7 +22,7 @@ export const getAllAssetController = async (
       username
     })
 
-    const assets = await Asset.find().limit(limit).skip(skip)
+    const assets = await assetService.getAllAssets(limit, skip)
 
     // Return 200 OK with an empty array if no assets are found
     res.status(200).json({
@@ -56,9 +56,14 @@ export const getAssetController = async (
       assetId
     })
 
-    const asset = await Asset.findById(assetId).setOptions({
-      includeDeleted: true
-    })
+    if (!assetId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Asset not found'
+      })
+    }
+
+    const asset = await assetService.getAssetById(assetId)
 
     if (!asset) {
       return res.status(404).json({
@@ -99,10 +104,7 @@ export const getAssetRecycleBinController = async (
     })
 
     // Bypass the global soft-delete filter to fetch only deleted items with pagination
-    const deletedAssets = await Asset.find({ isDeleted: true })
-      .setOptions({ includeDeleted: true })
-      .limit(limit)
-      .skip(skip)
+    const deletedAssets = await assetService.getAssetRecycleBin(limit, skip)
 
     return res.status(200).json({
       success: true,
@@ -144,15 +146,13 @@ export const createAssetController = async (
       assetName: assetName
     })
 
-    const newAsset = new Asset({
+    const newAsset = await assetService.createAsset({
       assetName,
       description,
       serialNumber,
       status,
       createdBy: userId
     })
-
-    await newAsset.save()
 
     res.status(201).json({
       success: true,
@@ -175,6 +175,13 @@ export const updateAssetController = async (
     const assetId = req.params.id
     const { assetName, description, serialNumber, status } = req.body
 
+    if (!assetId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Asset not found'
+      })
+    }
+
     // Build update object dynamically to prevent overwriting fields with undefined
     const updateData: Record<string, any> = { updatedBy: userId }
     if (assetName !== undefined) updateData.assetName = assetName
@@ -191,14 +198,7 @@ export const updateAssetController = async (
       updateData
     })
 
-    const updatedAsset = await Asset.findByIdAndUpdate(
-      assetId,
-      { $set: updateData },
-      {
-        new: true,
-        runValidators: true
-      }
-    )
+    const updatedAsset = await assetService.updateAsset(assetId, updateData)
 
     if (!updatedAsset) {
       return res.status(404).json({
@@ -227,6 +227,13 @@ export const deleteAssetController = async (
     const username = req.username
     const assetId = req.params.id
 
+    if (!assetId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Asset not found'
+      })
+    }
+
     // Log the request details for audit purposes
     logger.info({
       message: 'Deleting asset',
@@ -235,11 +242,7 @@ export const deleteAssetController = async (
       assetId
     })
 
-    const deletedAsset = await Asset.findByIdAndUpdate(
-      assetId,
-      { $set: { isDeleted: true, deletedBy: userId, deletedAt: new Date() } },
-      { new: true }
-    )
+    const deletedAsset = await assetService.deleteAsset(assetId, userId)
 
     if (!deletedAsset) {
       return res.status(404).json({
@@ -268,6 +271,13 @@ export const restoreAssetController = async (
     const username = req.username
     const assetId = req.params.id
 
+    if (!assetId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Asset not found'
+      })
+    }
+
     // Log the request details for audit purposes
     logger.info({
       message: 'Restoring asset',
@@ -276,11 +286,7 @@ export const restoreAssetController = async (
       assetId
     })
 
-    const restoredAsset = await Asset.findByIdAndUpdate(
-      assetId,
-      { $set: { isDeleted: false, deletedBy: null, deletedAt: null } },
-      { new: true, includeDeleted: true }
-    )
+    const restoredAsset = await assetService.restoreAsset(assetId)
 
     if (!restoredAsset) {
       return res.status(404).json({
@@ -298,3 +304,15 @@ export const restoreAssetController = async (
     next(error)
   }
 }
+
+export const assetController = {
+  getAllAssets: getAllAssetController,
+  getAsset: getAssetController,
+  getAssetRecycleBin: getAssetRecycleBinController,
+  createAsset: createAssetController,
+  updateAsset: updateAssetController,
+  deleteAsset: deleteAssetController,
+  restoreAsset: restoreAssetController
+}
+
+export default assetController
