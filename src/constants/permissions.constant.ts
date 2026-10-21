@@ -29,7 +29,16 @@ export const PERMISSIONS_LIST = [
   'readAsset',
   'updateAsset',
   'deleteAsset',
-  'restoreAsset'
+  'restoreAsset',
+
+  // Department Assignment Data
+  'assignDepartment',
+  'transferDepartment',
+  'readDepartmentAssignList',
+  'readDepartmentAssign',
+  'updateDepartmentAssign',
+  'deleteDepartmentAssign',
+  'restoreDepartmentAssign'
 ] as const
 
 // Automatically derive the TypeScript type from the array

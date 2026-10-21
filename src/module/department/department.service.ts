@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import Department from './department.model.js'
 import type { DepartmentInterface } from './department.interface.js'
 
@@ -6,7 +7,10 @@ export const getAllDepartmentsService = async (limit: number, skip: number) => {
 }
 
 export const getDepartmentByIdService = async (departmentId: string) => {
-  return await Department.findById(departmentId).setOptions({
+  const query = mongoose.Types.ObjectId.isValid(departmentId)
+    ? { _id: departmentId }
+    : { dept_id: departmentId.toUpperCase() }
+  return await Department.findOne(query).setOptions({
     includeDeleted: true
   })
 }
@@ -25,7 +29,19 @@ export const findDepartmentByNameService = async (name: string) => {
   return await Department.findOne({ name })
 }
 
+export const findDepartmentByDeptIdService = async (
+  dept_id: string,
+  includeDeleted = false
+) => {
+  const query = Department.findOne({ dept_id: dept_id.toUpperCase() })
+  if (includeDeleted) {
+    query.setOptions({ includeDeleted: true })
+  }
+  return await query
+}
+
 export const createDepartmentService = async (departmentData: {
+  dept_id?: string
   name: string
   description?: string
   status?: 'active' | 'inactive' | 'disabled'
@@ -40,8 +56,11 @@ export const updateDepartmentService = async (
   departmentId: string,
   updateData: Record<string, any>
 ) => {
-  return await Department.findByIdAndUpdate(
-    departmentId,
+  const query = mongoose.Types.ObjectId.isValid(departmentId)
+    ? { _id: departmentId }
+    : { dept_id: departmentId.toUpperCase() }
+  return await Department.findOneAndUpdate(
+    query,
     { $set: updateData },
     {
       new: true,
@@ -54,8 +73,11 @@ export const deleteDepartmentService = async (
   departmentId: string,
   userId?: any
 ) => {
-  return await Department.findByIdAndUpdate(
-    departmentId,
+  const query = mongoose.Types.ObjectId.isValid(departmentId)
+    ? { _id: departmentId }
+    : { dept_id: departmentId.toUpperCase() }
+  return await Department.findOneAndUpdate(
+    query,
     {
       $set: {
         isDeleted: true,
@@ -71,8 +93,11 @@ export const restoreDepartmentService = async (
   departmentId: string,
   userId?: any
 ) => {
-  return await Department.findByIdAndUpdate(
-    departmentId,
+  const query = mongoose.Types.ObjectId.isValid(departmentId)
+    ? { _id: departmentId }
+    : { dept_id: departmentId.toUpperCase() }
+  return await Department.findOneAndUpdate(
+    query,
     {
       $set: {
         isDeleted: false,
@@ -90,6 +115,7 @@ export const departmentService = {
   getDepartmentById: getDepartmentByIdService,
   getDepartmentRecycleBin: getDepartmentRecycleBinService,
   findDepartmentByName: findDepartmentByNameService,
+  findDepartmentByDeptId: findDepartmentByDeptIdService,
   createDepartment: createDepartmentService,
   updateDepartment: updateDepartmentService,
   deleteDepartment: deleteDepartmentService,

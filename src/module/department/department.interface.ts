@@ -1,6 +1,7 @@
 import type { Types } from 'mongoose'
 
 export interface DepartmentInterface {
+  dept_id?: string
   name: string
   description?: string
   status: 'active' | 'inactive' | 'disabled'

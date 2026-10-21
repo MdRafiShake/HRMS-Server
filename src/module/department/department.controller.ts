@@ -62,12 +62,6 @@ export const getDepartmentByIdController = async (
       return next(error)
     }
 
-    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
-      const error: any = new Error('Invalid Department ID format.')
-      error.statusCode = 400
-      return next(error)
-    }
-
     const department = await departmentService.getDepartmentById(departmentId)
 
     if (!department) {
@@ -132,7 +126,7 @@ export const createDepartmentController = async (
   try {
     const userId = req.userId
     const username = req.username
-    const { name, departmentName, description, status } = req.body
+    const { dept_id, name, departmentName, description, status } = req.body
 
     const targetName = name || departmentName
 
@@ -147,7 +141,8 @@ export const createDepartmentController = async (
       message: 'Creating a new department',
       userId,
       username,
-      name: targetName
+      name: targetName,
+      dept_id
     })
 
     // 2. Check if department already exists (active records)
@@ -160,8 +155,20 @@ export const createDepartmentController = async (
       return next(error)
     }
 
+    if (dept_id) {
+      const existingDeptId = await departmentService.findDepartmentByDeptId(
+        dept_id.trim().toUpperCase()
+      )
+      if (existingDeptId) {
+        const error: any = new Error('Department ID already exists.')
+        error.statusCode = 400
+        return next(error)
+      }
+    }
+
     // 3. Create the department
     const newDepartment = await departmentService.createDepartment({
+      dept_id: dept_id ? dept_id.trim().toUpperCase() : undefined,
       name: targetName,
       description,
       status,
@@ -187,16 +194,10 @@ export const updateDepartmentController = async (
     const departmentId = req.params.id
     const userId = req.userId
     const username = req.username
-    const { name, departmentName, description, status } = req.body
+    const { dept_id, name, departmentName, description, status } = req.body
 
     if (!departmentId) {
       const error: any = new Error('Department ID is required.')
-      error.statusCode = 400
-      return next(error)
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
-      const error: any = new Error('Invalid Department ID format.')
       error.statusCode = 400
       return next(error)
     }
@@ -206,6 +207,22 @@ export const updateDepartmentController = async (
     if (targetName !== undefined) updateData.name = targetName
     if (description !== undefined) updateData.description = description
     if (status !== undefined) updateData.status = status
+    if (dept_id !== undefined) {
+      const formattedDeptId = dept_id.trim().toUpperCase()
+      const existing = await departmentService.findDepartmentByDeptId(
+        formattedDeptId
+      )
+      if (
+        existing &&
+        existing._id.toString() !== departmentId &&
+        existing.dept_id !== departmentId.toUpperCase()
+      ) {
+        const error: any = new Error('Department ID already exists.')
+        error.statusCode = 400
+        return next(error)
+      }
+      updateData.dept_id = formattedDeptId
+    }
 
     logger.info({
       message: 'Updating department',
@@ -259,12 +276,6 @@ export const deleteDepartmentController = async (
       return next(error)
     }
 
-    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
-      const error: any = new Error('Invalid Department ID format.')
-      error.statusCode = 400
-      return next(error)
-    }
-
     const deletedDepartment = await departmentService.deleteDepartment(
       departmentId,
       userId
@@ -305,12 +316,6 @@ export const restoreDepartmentController = async (
 
     if (!departmentId) {
       const error: any = new Error('Department ID is required.')
-      error.statusCode = 400
-      return next(error)
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(departmentId)) {
-      const error: any = new Error('Invalid Department ID format.')
       error.statusCode = 400
       return next(error)
     }
