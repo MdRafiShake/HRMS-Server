@@ -20,6 +20,7 @@ export const PERMISSIONS_LIST = [
   'createDepartment',
   'updateDepartment',
   'deleteDepartment',
+  'restoreDepartment',
 
   // Read Assets Data
   'readAssetList',
