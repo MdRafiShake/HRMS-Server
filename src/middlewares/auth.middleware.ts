@@ -19,16 +19,27 @@ export const authMiddleware = async (
     updateRole: true,
     deleteRole: true,
     restoreRole: true,
-    readRole: true,
-    readDepartmentList: false,
-    createDepartment: false,
+    readDepartmentList: true,
+    createDepartment: true,
+    updateDepartment: true,
+    deleteDepartment: true,
+    restoreDepartment: true,
+    readDepartment: true,
 
     readAssetList: true,
     createAsset: true,
     readAsset: true,
     updateAsset: true,
     restoreAsset: true,
-    deleteAsset: true
+    deleteAsset: true,
+
+    assignDepartment: true,
+    transferDepartment: true,
+    readDepartmentAssignList: true,
+    readDepartmentAssign: true,
+    updateDepartmentAssign: true,
+    deleteDepartmentAssign: true,
+    restoreDepartmentAssign: true
   }
 
   next()
